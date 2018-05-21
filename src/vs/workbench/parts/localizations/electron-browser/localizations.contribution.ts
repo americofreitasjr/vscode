@@ -27,6 +27,7 @@ import { IStorageService, StorageScope, } from 'vs/platform/storage/common/stora
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { VIEWLET_ID as EXTENSIONS_VIEWLET_ID, IExtensionsViewlet } from 'vs/workbench/parts/extensions/common/extensions';
+import product from 'vs/platform/node/product';
 
 // Register action to configure locale and related settings
 const registry = Registry.as<IWorkbenchActionRegistry>(Extensions.WorkbenchActions);
@@ -94,6 +95,7 @@ export class LocalizationWorkbenchContribution extends Disposable implements IWo
 	}
 
 	private checkAndInstall(): void {
+		const bundledTranslations = (product['bundledTranslations'] || {})[platform.locale];
 		const language = platform.language;
 		if (language !== 'en' && language !== 'en_us') {
 			this.isLanguageInstalled(language)
@@ -112,10 +114,10 @@ export class LocalizationWorkbenchContribution extends Disposable implements IWo
 					}
 				});
 		} else if (language !== platform.locale
-			&& platform.bundledTranslations
-			&& platform.bundledTranslations['searchForLanguagePacks']
-			&& platform.bundledTranslations['searchMarketplace']
-			&& platform.bundledTranslations['neverAgain']) {
+			&& bundledTranslations
+			&& bundledTranslations['searchForLanguagePacks']
+			&& bundledTranslations['searchMarketplace']
+			&& bundledTranslations['neverAgain']) {
 
 			const dontShowSearchLanguagePacksAgainKey = 'language.install.donotask';
 			let dontShowSearchForLanguages = JSON.parse(this.storageService.get(dontShowSearchLanguagePacksAgainKey, StorageScope.GLOBAL, '[]'));
