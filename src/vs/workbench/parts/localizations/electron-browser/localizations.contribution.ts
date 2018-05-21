@@ -107,46 +107,47 @@ export class LocalizationWorkbenchContribution extends Disposable implements IWo
 											{ label: localize('install', "Install"), run: () => this.installExtension(extension) },
 											{ label: localize('more information', "More Information..."), run: () => window.open('https://go.microsoft.com/fwlink/?linkid=872941') }
 										]);
-								} else if (platform.bundledTranslations
-									&& platform.bundledTranslations['searchForLanguagePacks']
-									&& platform.bundledTranslations['searchMarketplace']
-									&& platform.bundledTranslations['neverAgain']
-								) {
-									const dontShowSearchLanguagePacksAgainKey = 'language.install.donotask';
-									let dontShowSearchForLanguages = JSON.parse(this.storageService.get(dontShowSearchLanguagePacksAgainKey, StorageScope.GLOBAL, '[]'));
-
-									// The initial value for below doent get used. We just have it here so that they get localized.
-									// The localized strings then get pulled into the "bundledTranslations.json" file when we ship
-									let searchForLanguagePacks = localize('searchForLanguagePacks', "Your locale is not supported by VS Code. There are extensions in the marketplace that can localize VS Code.");
-									let searchMarketplace = localize('searchMarketplace', "Search Marketplace");
-									let dontShowAgain = localize('neverAgain', "Don't Show Again");
-									searchForLanguagePacks = platform.bundledTranslations['searchForLanguagePacks'];
-									searchMarketplace = platform.bundledTranslations['searchMarketplace'];
-									dontShowAgain = platform.bundledTranslations['neverAgain'];
-
-									this.notificationService.prompt(Severity.Info, searchForLanguagePacks,
-										[
-											{
-												label: searchMarketplace, run: () => {
-													this.viewletService.openViewlet(EXTENSIONS_VIEWLET_ID, true)
-														.then(viewlet => viewlet as IExtensionsViewlet)
-														.then(viewlet => {
-															viewlet.search(`category:"Language Packs"`);
-															viewlet.focus();
-														});
-												}
-											},
-											{
-												label: dontShowAgain, run: () => {
-													dontShowSearchForLanguages.push(language);
-													this.storageService.store(dontShowSearchLanguagePacksAgainKey, StorageScope.GLOBAL, dontShowSearchForLanguages);
-												}
-											}
-										]);
 								}
 							});
 					}
 				});
+		} else if (language !== platform.locale
+			&& platform.bundledTranslations
+			&& platform.bundledTranslations['searchForLanguagePacks']
+			&& platform.bundledTranslations['searchMarketplace']
+			&& platform.bundledTranslations['neverAgain']) {
+
+			const dontShowSearchLanguagePacksAgainKey = 'language.install.donotask';
+			let dontShowSearchForLanguages = JSON.parse(this.storageService.get(dontShowSearchLanguagePacksAgainKey, StorageScope.GLOBAL, '[]'));
+
+			// The initial value for below doent get used. We just have it here so that they get localized.
+			// The localized strings then get pulled into the "bundledTranslations.json" file when we ship
+			let searchForLanguagePacks = localize('searchForLanguagePacks', "Your locale is not supported by VS Code. There are extensions in the marketplace that can localize VS Code.");
+			let searchMarketplace = localize('searchMarketplace', "Search Marketplace");
+			let dontShowAgain = localize('neverAgain', "Don't Show Again");
+			searchForLanguagePacks = platform.bundledTranslations['searchForLanguagePacks'];
+			searchMarketplace = platform.bundledTranslations['searchMarketplace'];
+			dontShowAgain = platform.bundledTranslations['neverAgain'];
+
+			this.notificationService.prompt(Severity.Info, searchForLanguagePacks,
+				[
+					{
+						label: searchMarketplace, run: () => {
+							this.viewletService.openViewlet(EXTENSIONS_VIEWLET_ID, true)
+								.then(viewlet => viewlet as IExtensionsViewlet)
+								.then(viewlet => {
+									viewlet.search(`category:"Language Packs"`);
+									viewlet.focus();
+								});
+						}
+					},
+					{
+						label: dontShowAgain, run: () => {
+							dontShowSearchForLanguages.push(language);
+							this.storageService.store(dontShowSearchLanguagePacksAgainKey, StorageScope.GLOBAL, dontShowSearchForLanguages);
+						}
+					}
+				]);
 		}
 	}
 
